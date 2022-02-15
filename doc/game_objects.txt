@@ -1,0 +1,64 @@
+
+Client:
+	attrs:
+		- username:
+		- connection:
+
+Player: extends Client
+	attrs:
+		- table: (10x10 ploča, za crtanje)
+		- connected: (je li spojen)
+
+
+	methods:
+		- create_navy: (kreiranje flote)
+		- strike: (pokušaj potapljanja broda)
+		- is_defeated: provjerava jesu li svi brodovi sunked
+
+Table: (Tkinter?)
+	attrs:
+		- table: (2D matrica) - elementi su Grid objekti
+		- boats: elementi tipa Boat
+
+	methods:
+		- create_table: (kreira tablicu)
+
+Grid: (hoće li ovo biti Button možda? - ne, probat ćemo sa Canvas, pa crtat oblike)
+	attrs:
+		- hit: (je li pogođen)
+		- type: 
+		- neighbours: lista sa 2 elementa, na prvom mjestu je sljedeći Grid s desna, a na drugom mjestu je sljedeći Grid ispod - None ako nema
+
+	methods:
+		- highlight: (ovo je za efekt, kad se postavlja prod, potrebno će biti definirati stranu tj rub, itd,)
+		- show ?
+
+Shape: (služit će za oblik broda, provjeru je li brod ispravno postavljen, itd.)
+	attrs:
+		- shape: lista elemenata tipa Grid
+		- orientation: orijentacija oblika (0 ili 1, 0 za udesno, 1 za udolje)
+		- size: 
+		- color: boja oblika, ovisi o brodu, s brodom se to bude inicijaliziralo
+
+	methods:
+		- highlight: s obzirom na koordinatu miša, i na orijentaciju, i na size, označi u tablici _size_ gridova u _orientation_ smjeru (udesno ili prema dolje)
+				ovo s mišem bi se moglo negdje prije dobiti, pa ova metoda kao parametar dobi početni Grid i smjer, i onda napravi shape
+				ajmo ne raditi nove objekte za svaki pomak miša, već samo ažuriramo listu Gridova, i highlightamo novi, odnosno stari odjebemo
+				boja u plavo ako se brod može postaviti, inače boja u crveno
+		- confirm: ovo bi trebalo radit kad korisnik pritisne lijevi klik miša, napravi završni
+
+Boat: (extends Shape)
+	attrs:
+		- size: definirat ćeš veličinu broda (4, 3, 2 ili 1) i s time inicijalizirati Shape klasu
+		- color:
+
+	methods:
+		- is_sunked: (je li potopljen) - iteriraš po shape listi i provjeravaš je li svaki element Grid pogođen...
+
+Game:
+	attrs:
+		- players: igrači Player
+		- running: status, pokrenuta li je igra
+
+	methods:
+		- 

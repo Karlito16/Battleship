@@ -1,0 +1,87 @@
+					BATTLESHIP
+
+- igra za dvoje
+
+SERVER:
+- server se prvi pokreće (kreira socket, itd.)
+- pokreće se petlja u kojoj konstantno čeka nove klijente
+- pri prihvaćanju klijenta, server osim što zna konekciju sa klijentom, od njega čeka i 
+username, te stvara objekt Client
+- dodane klijente stavlja u red klijenata (napravi svoju implementaciju reda,
+omogući ukidanje klijenata zbog moguće diskonekcije)
+- !!!!!!igraj se tako da u isto vrijeme mogu biti pokrenute 2 igre (dakle, 4 klijenta), a ostatak
+čeka u redu...kad završe s igrom, idu na kraj reda i čekaju ponovni ulazak, ako žele opet
+igrati!!!!!!!
+trenutno će ovo raditi tako da ti je protivnik random osoba
+- kad budu spojena 2 igrača, kreira igru i stavlja ih u tu igru, za dalje vidjeti pod GAME
+o tome ih obavijesti sa "-game;[username]", gdje će onda oni krenuti sa crtanjem flote itd.
+svaka igra je zaseban thread, logično
+username koji šalje je od drugog igrača
+- !!!!!!!nastavlja čekati nove klijente, stavlja ih u red, ako može, kreira novu igru, inače ih drži
+u lobbyu, možda da im pošalje "-lobby;"!!!!!!!
+
+SERVER-GAME
+- objekt Game, prima parametre client1 i client2
+- stvara li onda i objekte player za svakog klijenta? VIDJET ĆEŠ
+- šalje igračima da krenu sa crtanjem tablice (-draw;) - NIJE POTREBNO JA MISLIM!!!
+zato kaj pošaljemo "-game;[username]" i to im je okidač da krenu sa crtanjem flote
+- čeka da oba igrača pošalju "-ready;", potom pokreće igru ("-start;")
+klijent će onda otvoriti panel za igru, detaljnije kasnije..
+- bira igrača koji će prvi pucati i šalje mu poruku za to ("-strike;")
+- čeka od tog igrača pucanj (šalje se string u obliku 2 broja, "ij", i je row, j je column)
+"-strike;i|j"
+- sad šalje to drugom igraču, da zna koje polje je protivnik gađao "-strike;i|j"
+- čeka od tog igrača potvrdu je li ikoji blok pogođen, i ako je, koji
+(šalje se -1 za promašaj, odnosno 0, 1, 2 ili 3 za vrstu broda)
+"-strike;[NUM]"
+- sad šalje tu informaciju ovom koji je gađao, da si može označiti je li pogodio brod
+(i koji), ili je promašio
+- ponavlja korake od slanja "-strike;"
+- ako dođe poruka "-strike;all", stopira igru, gleda tko je to poslao, te drugog igrača 
+proglašava pobjednikom (šalje mu "-strike;all"); ako netko izgubi konekciju, pri 
+diskonekciji se pošalje "-left;" drugom klijentu, kojemu se također prekida igra i 
+vraća ga se u lobby (NEĆEMO OVO"-strike;all")
+- završava thread s igrom, igrači se vraćaju u red klijenata, a svaki igrač može pritisnuti
+tipku "leave" pri kojoj se diskonekta sa servera; server dobiva poruku "-left;" te ga baca
+van iz reda
+
+CLIENT:
+- kreira prozor, tkinter, dakle kaj, nek klijent bude gui aplikacija, dakle extends tkinter
+- inicijalizira sve kaj treba
+- u početku bude otvoren prozor za unos usernamea i join gumb
+- pri pritisku na join, uz uvjet da je unešeno ime, šalje se request za spajanje na server
+- mislim da ne treba stvarat objekt socket, nego hardkodirat hostname od servera, to se zna,
+i samo konektati na taj hostname i port? vidi to
+- poslati username "-username;[username]"
+- klijent čeka drugog igrača, "waiting for second player" screen nparavi
+- kad dobi "-game;[username]", onda započinje s igrom
+- dobit će i "-draw;", iako sad gledam, to možda nije potrebno ,nego odma po primitku "-game;..."
+odmah krene screen sa crtanjem flote, i kad si spreman, klijent šalje serveru "-ready;"
+- dobit će "-start;" kad kreće sa igranjem
+- prebacuje se na game panel, to sve dalje složi, u painntu, ali želim ovak okvirno:
+	naslov - BattleShip
+	lijevo se nalaze dve tablice, gornja je od klijenta, donja je prazna koja se 
+		s vremenom puni, ona je od protivnika jel
+	desno su podaci poput koje boje je koji brod, koje polje gađa protivnik, i sl.
+- ako dobi "-strike;", to znači da on puca
+- korisnik bira polje u donjoj tablici, koje želi pucati, i puca tako da označi polje!
+- šalje to kao "-strike;i|j", gore piše zašto tako
+- čeka potvrdu dal je fakat brod na toj poziciji, dakle čeka poruku "-strike;[NUM]"
+- farba na tom polju ovisno o value od primljene naredbe, dakle farba X na praznoj bijeloj
+kučići, ili farba to polje u jednu od 4 boja, ovisno koji je brod (ili dio broda) pogođen
+- inače, ako dobi poruku "-strike;i|j", to znači da ga je protivnik tu gađao
+korisnik onda provjeri na svom polju jel kaj pogođeno, i što i šalje "-strike;[NUM]"
+također, označava si na gornjem, svom polju X na mjesto gdje je gađao protivnik, ako je
+uništio neki dio broda, inače nema smisla? ili?
+isto tako, razmisli i neku ANIMACIJU DODAT ukoliko je ovaj pogodio brod!!
+
+CRTANJE FLOTE:
+- imamo jel, polje 10x10 (class Table), atribut je matrica table, a sve to je jedan Canvas I guess
+i onda kreirati tablicu, stvoriti zasebne gridove
+- kad se sve to sredi, jel, mišem se ide redom postavljati brodove, dok mišem ide po tablici,
+plavo se označe rubovi koji označavaju eventualnu postavu broda, a crveno ako se brod ne može postaviti
+- svaki Grid element ima atribut type, tip broda, od 0 do 3 vrijednost
+- crta se jedan brod m=4, dva broda m=3, tri broda m=2, i četiri borda m=1
+(crvena-plava-zelena-žuta)
+- po završetku toga, crtanje ide automatski jel, šalje se "-ready;"
+- trenutno nije moguće mijenjati izbor crtanja
