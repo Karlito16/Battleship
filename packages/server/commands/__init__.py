@@ -18,13 +18,19 @@ def _time_offset(func):
     functools.wraps(func)
 
     def time_offset_wrapper(*args, **kwargs):
-        Timer.wait(t=Commands.each_command_time_offset)
+        Timer.wait(t=Commands.get_each_command_time_offset())
         return func(*args, **kwargs)
 
     return time_offset_wrapper
 
 
 class Commands(object):
+    GAME = "-game"
+    READY = "-ready"
+    STRIKE = "-strike"
+    LEFT = "-left"
+    STAY = "-stay"
+
     _each_command_time_offset = 1e-3
     _username_waiting_time = 10  # seconds
 
@@ -76,8 +82,8 @@ class Commands(object):
         self._server.clients.add_client(client=client)
         return
 
-    @property
-    def each_command_time_offset(self):
+    @staticmethod
+    def get_each_command_time_offset():
         """
         Getter.
         :return: float

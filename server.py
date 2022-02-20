@@ -3,6 +3,7 @@
 import threading
 
 from packages.server.clients import Clients
+from packages.server.clients.client import Client
 from packages.server.commands import Commands
 from packages.public.communication import Communication
 from packages.public.logger import Logger
@@ -67,30 +68,36 @@ class Server(Communication):
         :param connection: <class socket>
         :return: None
         """
-        client = Commands.get_username(connection=connection)
-        if client:
-            client.connected = True
-            self._clients.add_client(client=client)
-        else:
-            return
+        # ##Right now, we won't request client for this username##
+        # client = Commands.get_username(connection=connection)
+        # if client:
+        #     client.connected = True
+        #     self._clients.add_client(client=client)
+        # else:
+        #     return
+
+        # ##Temporary solution, without the username##
+        client = Client(connection=connection, username="")
+        client.connected = True
+
         # runs this loop while client is connected to the server
         while client.connected:
             cmd_key, value = self.receive(connection=connection)
 
-            if cmd_key == "-left":
+            if cmd_key == Commands.LEFT:
                 self._commands.client_left(client=client)
 
-            elif cmd_key == "-ready":
+            elif cmd_key == Commands.READY:
                 if Commands.clients_ready(client=client):
                     if client.in_game:  # this means both of them are in the game
                         client.game.next_turn = True
                     else:
                         self._commands.game_start(game=client.game)
 
-            elif cmd_key == "-stay":
+            elif cmd_key == Commands.STAY:
                 self._commands.client_stay(client=client)
 
-            elif cmd_key == "-strike":
+            elif cmd_key == Commands.STRIKE:
                 if value == "":
                     self._commands.strike(client=client)
                 elif '|' in value:

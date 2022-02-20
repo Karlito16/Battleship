@@ -15,12 +15,36 @@ class Communication(socket.socket):
     _port = 10000
     _listen = 5
 
-    def __init__(self):
+    def __init__(self, hostname=None):
         """
         Constructor.
         """
         super().__init__()
-        self._hostname = socket.gethostname()
+        if hostname:
+            self._hostname = hostname
+        else:
+            self._hostname = socket.gethostname()
+
+    def connect_to_server(self, hostname, port=None):
+        """
+        Method connects client with the server.
+        Hostname is equivalent to the IP address of the server.
+        Port doesn't need to be defined, and in that case,
+        we will try to use default port.
+        Method returns True if connecting was succesfull,
+        otherwise prints the error message and returns False.
+        :param hostname: str
+        :param port: int
+        :return: bool
+        """
+        if port is None:
+            port = Communication._port
+        try:
+            self.connect((hostname, port))
+            return True
+        except Exception as e:
+            Logger.print(message=f"[Error 43]\t\tUnable to connect to the server.\n{e}")
+            return False
 
     def start_server(self, func, *args, **kwargs):
         """
@@ -51,7 +75,7 @@ class Communication(socket.socket):
 
     @staticmethod
     @Logger.sending_info
-    def send(connection, message):
+    def send_(connection, message):
         """
         Sending the message.
         :param connection: <socket>
@@ -61,9 +85,9 @@ class Communication(socket.socket):
         try:
             connection.send(message.encode(Communication._coding))
             time.sleep(Communication._send_sleep)
-        except Exception as exception:
+        except RuntimeError as exception:
             # print(f"[Error 37]\t{exception}\nFailed to send the message.")
-            Logger.print(message=f"[Error 37]\t{exception}\nFailed to send the message.")
+            Logger.print(message=f"[Error 37]\t\tFailed to send the message. {exception}")
             return False
         else:
             return True
@@ -77,7 +101,7 @@ class Communication(socket.socket):
         :return: None
         """
         for client in sequence:
-            Communication.send(connection=client.connection, message=message)
+            Communication.send_(connection=client.connection, message=message)
 
     @staticmethod
     @Logger.receive_info
@@ -94,8 +118,10 @@ class Communication(socket.socket):
         """
         try:
             message = connection.recv(Communication._buffer).decode(Communication._coding)
+        except ConnectionAbortedError:
+            Logger.print(message="Connection is closed.", type_=Logger.INFO)
+            return
         except Exception as exception:
-            # print(f"[Error 79]\t{exception}\nFailed to receive a message.")
             Logger.print(message=f"[Error 79]\t{exception}\nFailed to receive a message.")
             return
         else:

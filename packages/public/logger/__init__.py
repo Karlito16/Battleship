@@ -6,6 +6,7 @@ import functools
 
 
 class Logger(object):
+    INFO = "[INFO]\t\t"
 
     _logger = True   # hardcoding
 
@@ -17,14 +18,18 @@ class Logger(object):
         return f"Logger: {self._logger}"
 
     @staticmethod
-    def print(message):
+    def print(message, type_=None):
         """
         Prints the message if it is allowed.
         :param message: str
+        :param type_: str
         :return: None
         """
         if Logger._logger:
-            print(message)
+            if type_ is None:
+                print(message)
+            else:
+                print(f"{type_}{message}")
         return
 
     @staticmethod
@@ -43,13 +48,18 @@ class Logger(object):
                 for cmd_key, value_ in items:
                     if value_ == value:
                         # print(f"[Received]\t\t\tMessage: {cmd_key}:{value}")
-                        Logger.print(message=f"[Received]\t\t\tMessage: {cmd_key}:{value}")
+                        Logger.print(message=f"[Received]\t\t\tMessage: {cmd_key};{value}")
                 return value
             else:
-                cmd_key, value = func(*args, **kwargs)
-                # print(f"[Received]\t\tMessage: {cmd_key}:{value}")
-                Logger.print(message=f"[Received]\t\tMessage: {cmd_key}:{value}")
-                return cmd_key, value
+                try:
+                    cmd_key, value = func(*args, **kwargs)
+                except TypeError as e:
+                    # this happens when client disconnects, then socket method "recv" returns None,
+                    # which cannot be unpacked
+                    return None, None
+                else:
+                    Logger.print(message=f"[Received]\t\tMessage: {cmd_key};{value}")
+                    return cmd_key, value
 
         return receive_info_wrapper
 
