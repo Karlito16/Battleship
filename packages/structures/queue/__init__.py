@@ -5,7 +5,52 @@
 from packages.structures.iterable import Iterable
 
 
-class Queue(Iterable):
+class Queue(list):
+
+    def __init__(self):
+        """
+        Constructor.
+        """
+        super().__init__()
+
+    # def __len__(self):
+    #     """
+    #     special method len
+    #     :return: int
+    #     """
+    #     return super().__len__()
+
+    def enqueue(self, value):
+        """
+        Adds new element in queue.
+        :param value: <class object>
+        :return: bool
+        """
+        self.append(value)
+
+    def dequeue(self):
+        """
+        Removes the first of remaining elements
+        that has been added in the queue.
+        :return: <class object>
+        """
+        if len(self) > 0:
+            return self.pop(0)
+        return None
+
+    def peek(self, n=1):
+        """
+        Returns the first n elements of the queue.
+        If n > size, returns emptly list.
+        :param n: int
+        :return: list
+        """
+        if n > len(self):
+            return []
+        return self[0], self[1]
+
+
+class QueueC(Iterable):
 
     class QueueElement(object):
         """
@@ -92,12 +137,14 @@ class Queue(Iterable):
         """
         element = Queue.QueueElement(value=value)
         # if we have queue that is empty
-        if self._read == self._write is None:
+        if self._read is None and self._write is None:
             self._read = self._write = element
         # not empty queue
         else:
-            element.next = self._write
+            prev_element = self._write
             self._write = element
+            # element.next = self._write
+            prev_element.next = element
         self._size += 1
         return True
 

@@ -56,8 +56,8 @@ class Game(threading.Thread):
         :return: <class Client>
         """
         if client == self._client1:
-            return self._client1
-        return self._client2
+            return self._client2
+        return self._client1
 
     def kill(self):
         """
@@ -105,13 +105,13 @@ class Game(threading.Thread):
         self._running = True
         try:
             self._stopwatch.start()
-            self._stopwatch.join()
             while self._running:
                 for client in self.clients:
                     self._server.commands.strike(client=client)
                     self._next_turn = False
                     while not self._next_turn:
                         Timer.wait(t=Game._game_loop_time_offset)
+            self._stopwatch.join()
         except RuntimeError:
             if self._running:
                 # breaks the game loop, probably because one of players lost connection etc.

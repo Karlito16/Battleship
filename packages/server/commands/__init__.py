@@ -30,6 +30,7 @@ class Commands(object):
     STRIKE = "-strike"
     LEFT = "-left"
     STAY = "-stay"
+    DEFEND = "-defend"
 
     _each_command_time_offset = 1e-3
     _username_waiting_time = 10  # seconds
@@ -54,8 +55,8 @@ class Commands(object):
         """
         client.connected = False  # ends 'client trace' while loop in server.py
         if client.in_game:
-            self._server.send(connection=client.game.get_opponent(client=client).connection,
-                              message=f"-left;")
+            self._server.send_(connection=client.game.get_opponent(client=client).connection,
+                               message=f"-left;")
             client.game.kill()
         self._server.clients.remove_client(client=client)
         return True
@@ -98,12 +99,12 @@ class Commands(object):
         :param game: <class Game>
         :return: bool
         """
-        self._server.send_to_all(sequence=game.clients, message=f"-start;")
+        # self._server.send_to_all(sequence=game.clients, message=f"-start;")
         game.start()    # new Thread!
-        game.join()
-        for client in game.clients:
-            # we will use this attribute later for each turn, clients will send ready before the start of each turn
-            client.ready = False
+        # game.join()
+        # for client in game.clients:       ### not needed? ###
+        #     # we will use this attribute later for each turn, clients will send ready before the start of each turn
+        #     client.ready = False
         return True
 
     @_time_offset
@@ -134,7 +135,10 @@ class Commands(object):
         :param client: <class Client>
         :return: None
         """
-        self._server.send(connection=client.connection, message=f"-game;{client.game.get_opponent(client=client).username}")
+        try:
+            self._server.send_(connection=client.connection, message=f"-game;{client.game.get_opponent(client=client).username}")
+        except AttributeError:
+            Logger.print(message=f"Game object: {type(client.game.get_opponent)}", type_=Logger.ERROR)
         return
 
     @_time_offset
@@ -162,14 +166,16 @@ class Commands(object):
         client = kwargs["client"]
         opponent = client.game.get_opponent(client=client)
         if len(args) == 0:  # informs client that it is now his turn for attack
-            self._server.send(connection=client.connection, message="-strike;")
+            self._server.send_(connection=client.connection, message=f"{Commands.STRIKE};")  # informs attacker
+            self._server.send_(connection=client.game.get_opponent(client=client).connection,    # informs defender
+                               message=f"{Commands.DEFEND};")
         elif len(args) == 1:
             value = args[0]
             if value == "all":      # client lost, opponent won
-                self._server.send(connection=opponent.connection, message="-strike;all")
-                self._server.games.end_game(game=client.game)
-            elif isinstance(value, int):    # informs opponent about attack
-                self._server.send(connection=opponent.connection, message=f"-strike;{value}")
+                self._server.send_(connection=opponent.connection, message=f"{Commands.STRIKE};all")
+                self._server.games.end_game(game_=client.game)
+            elif value.strip('-').isdigit():  # informs opponent about attack
+                self._server.send_(connection=opponent.connection, message=f"{Commands.STRIKE};{value}")
             else:
                 Logger.print(message=f"[Error 117]\t\tInvalid args: {args}")
                 return False
@@ -180,7 +186,7 @@ class Commands(object):
                 Logger.print(message=f"[Error 104]\t\t{e}")
                 return False
             else:   # forwards the attacker's choice to the opponent
-                self._server.send(connection=opponent.connection, message=f"-strike;{str(i)}|{str(j)}")
+                self._server.send_(connection=opponent.connection, message=f"{Commands.STRIKE};{str(i)}|{str(j)}")
         else:
             Logger.print(message=f"[Error 116]\t\tInvalid args: {args}")
             return False

@@ -3,11 +3,12 @@ Client:
 	attrs:
 		- username:
 		- connection:
+		- connected: (je li spojen)
+		- ...
 
 Player: extends Client
 	attrs:
 		- table: (10x10 ploča, za crtanje)
-		- connected: (je li spojen)
 
 
 	methods:
@@ -15,7 +16,7 @@ Player: extends Client
 		- strike: (pokušaj potapljanja broda)
 		- is_defeated: provjerava jesu li svi brodovi sunked
 
-Table: (Tkinter?)
+Fleet:
 	attrs:
 		- table: (2D matrica) - elementi su Grid objekti
 		- boats: elementi tipa Boat
@@ -23,11 +24,11 @@ Table: (Tkinter?)
 	methods:
 		- create_table: (kreira tablicu)
 
-Grid: (hoće li ovo biti Button možda? - ne, probat ćemo sa Canvas, pa crtat oblike)
+Grid: (hoće li ovo biti Button možda? - ne, probat ćemo sa Canvas, pa crtat oblike - NE --------- PYGAME)
 	attrs:
 		- hit: (je li pogođen)
 		- type: 
-		- neighbours: lista sa 2 elementa, na prvom mjestu je sljedeći Grid s desna, a na drugom mjestu je sljedeći Grid ispod - None ako nema
+		- neighbours: lista sa 2 elementa, na prvom mjestu je sljedeći Grid s desna, a na drugom mjestu je sljedeći Grid ispod - None ako nema - NE, MEMORY USAGE
 
 	methods:
 		- highlight: (ovo je za efekt, kad se postavlja prod, potrebno će biti definirati stranu tj rub, itd,)

@@ -3,7 +3,6 @@
 # package name: window
 
 import pygame
-from packages.player.point import Point
 
 
 class Window(object):
@@ -11,6 +10,11 @@ class Window(object):
     BLACK = (0, 0, 0)
     RED = (255, 0, 0)
     BLUE = (0, 0, 255)
+    GREY = (128, 128, 128)
+    YELLOW = (255, 255, 0)
+    GREEN = (0, 255, 0)
+    ORANGE = (255, 165, 0)
+    PINK = (255, 192, 203)
 
     BGCOLOR = WHITE
 
@@ -18,6 +22,7 @@ class Window(object):
     FONT_SIZE_1 = 72
     FONT_SIZE_2 = 36
     FONT_SIZE_3 = 24
+    FONT_SIZE_4 = 18
 
     FPS = 30
     FPS_CLOCK = pygame.time.Clock()
@@ -25,55 +30,38 @@ class Window(object):
     WELCOME_SCREEN_SLEEP_TIME = 2    # seconds
     CONNECTION_FAILED_SLEEP_TIME = 2    # seconds
 
-    def __init__(self, width, height, margin):
+    def __init__(self, caption, width, height, margin):
         """
         Constructor. Width and height are parameters for window size.
         Margin is size of x and y margins of the window.
         Constructor then defines other important attributes
         for our window.
+        :param caption: str
         :param width: int
         :param height: int
         :param margin: int
         """
+        self._caption = caption
         self._width = width
         self._height = height
         self._margin = margin
 
+        self._message = ""
+
         # init the window
         pygame.init()
-        self._main_surface = pygame.display.set_mode((self._width, self._height))
-        self._main_surface.fill(Window.BGCOLOR)
-        pygame.display.set_caption("Battleship")
-        self._display_surface = self._main_surface.copy()       # surface for showing the current screen
-        self._window_rect = (0, 0, self._width, self._height)
+        self._display_surf = pygame.display.set_mode((self._width, self._height))    # constant, display surface for our window
+        self.DISPLAYSURF.fill(Window.BGCOLOR)
+        pygame.display.set_caption(self._caption)
+        # self._window_rect = (0, 0, self._width, self._height)
 
-        # Rectangles sizes, will be created later
-        self._player_grid_size = self._width - self._height
-        self._opponent_grid_size = self._height - 3 * self._margin
-        self._fleet_table_size = 2 * self._height - self._width - 3.5 * self._margin
-
-        # These points are on the top left corner of each rectangle that will be
-        # created later
-        self._player_grid_point = Point(x=self._margin,
-                                        y=2 * self._margin)
-        self._opponent_grid_point = Point(x=2 * self._margin + self._player_grid_size,
-                                          y=2 * self._margin)
-        self._fleet_table_point = Point(x=self._margin,
-                                        y=2.5 * self._margin + self._player_grid_size)
-
-        # Rectangles
-        self._player_grid_rect = pygame.Rect(self._player_grid_point.x,
-                                             self._player_grid_point.y,
-                                             self._player_grid_size,
-                                             self._player_grid_size)
-        self._opponent_grid_rect = pygame.Rect(self._opponent_grid_point.x,
-                                               self._opponent_grid_point.y,
-                                               self._opponent_grid_size,
-                                               self._opponent_grid_size)
-        self._fleet_table_rect = pygame.Rect(self._fleet_table_point.x,
-                                             self._fleet_table_point.y,
-                                             self._fleet_table_size,
-                                             self._fleet_table_size)
+    @property
+    def caption(self):
+        """
+        Getter.
+        :return: str
+        """
+        return self._caption
 
     @property
     def width(self):
@@ -100,54 +88,30 @@ class Window(object):
         return self._margin
 
     @property
-    def main_surface(self):
+    def DISPLAYSURF(self):  # constant
         """
-        Getter for attribute main_surface.
+        Getter for constant attribute _display_surf.
         :return: <class Surface>
         """
-        return self._main_surface
+        return self._display_surf
 
     @property
-    def display_surface(self):
+    def message(self):
         """
-        Getter for attribute display_surface.
-        :return: <class Surface>
+        Getter for attribute message.
+        :return: str
         """
-        return self._display_surface
+        return self._message
 
-    @property
-    def window_rect(self):
+    @message.setter
+    def message(self, value):
         """
-        Getter for attribute window_rect.
-        :return: <class Rect>
+        Setter for atribute message.
+        :param value: str
+        :return: None
         """
-        return self._window_rect
-
-    @property
-    def player_grid_rect(self):
-        """
-        Getter.
-        :return: <class Rect>
-        """
-        return self._player_grid_rect
-
-    @property
-    def opponent_grid_rect(self):
-        """
-        Getter.
-        :return: <class Rect>
-        """
-        return self._opponent_grid_rect
-
-    @property
-    def fleet_table_rect(self):
-        """
-        Getter.
-        :return: <class Rect>
-        """
-        return self._fleet_table_rect
-
-    # ...
+        self._message = value
+        return
 
     def show_welcome_screen(self, animation=False):
         """
@@ -159,19 +123,7 @@ class Window(object):
         """
         if animation:
             pass
-
-        self._main_surface.fill(Window.BGCOLOR)     # clear surface
-
-        caption_surf, caption_rect = Window._create_text(Window.FONT_NAME_1, Window.FONT_SIZE_1,
-                                                         "BATTLESHIP", Window.BLACK, Window.WHITE)
-        caption_rect.midtop = (self._width / 2, self._height / 4)
-
-        message_surf, message_rect = Window._create_text(Window.FONT_NAME_1, Window.FONT_SIZE_2,
-                                                         "Connecting to the server...", Window.BLACK, Window.WHITE)
-        message_rect.midbottom = (self._width / 2, self._height * 0.75)
-
-        self._display_surface.blit(caption_surf, caption_rect)
-        self._display_surface.blit(message_surf, message_rect)
+        self._show_caption_message_screen(caption=self._caption, message="Connecting to the server...")
         return None
 
     def show_connection_failed_screen(self, animation=False):
@@ -184,23 +136,119 @@ class Window(object):
         """
         if animation:
             pass
-
-        self._main_surface.fill(Window.BGCOLOR)  # clear surface
-
-        caption_surf, caption_rect = Window._create_text(Window.FONT_NAME_1, Window.FONT_SIZE_1,
-                                                         "ERROR", Window.BLACK, Window.BLACK)
-        caption_rect.midtop = (self._width / 2, self._height / 4)
-
-        message_surf, message_rect = Window._create_text(Window.FONT_NAME_1, Window.FONT_SIZE_1,
-                                                         "Connecting to the server has failed!", Window.WHITE, Window.BLACK)
-        message_rect.midbottom = (self._width / 2, self._height * 0.75)
-
-        self._display_surface.blit(caption_surf, caption_rect)
-        self._display_surface.blit(message_surf, message_rect)
+        self._show_caption_message_screen(caption="ERROR", message="Connecting to the server has failed!")
         return None
 
+    def show_waiting_for_player_screen(self, animation=False):
+        """
+        Sets the waiting for player screen as currently displayed screen.
+        This happens when player joins an empty lobby.
+        :param animation: bool
+        :return: None
+        """
+        if animation:
+            pass
+        self._show_caption_message_screen(caption=self._caption, message="Waiting for another player...")
+        return None
+
+    def show_game_screen(self, player, animation=False):
+        """
+        Sets the game screen as currently displayed screen.
+        This happens when player joins the game.
+        :param player: <class Player>
+        :param animation: bool
+        :return: None
+        """
+        if animation:
+            pass
+        self.clear()    # refresh the screen (that is, clear) so we can see changes
+
+        # show title
+        font_size = self._margin * 0.9
+        surf, rect = self.create_text(font_name=Window.FONT_NAME_1, font_size=int(font_size), text=self._caption,
+                                      fg=Window.BLACK, bg=Window.BGCOLOR)
+        rect.midtop = (self._width // 2, (self._margin - font_size) // 2)
+        self.DISPLAYSURF.blit(surf, rect)
+
+        # show grid names
+        font_size = self._margin * 0.25
+        for x, y, name, color in (
+                (player.his_grid.x + player.his_grid.width / 2, player.his_grid.y - 5, "You", Window.BLUE),
+                (player.opponent_grid.x + player.opponent_grid.width / 2, player.opponent_grid.y - 5, "Enemy", Window.RED)
+        ):
+            surf, rect = self.create_text(font_name=Window.FONT_NAME_1, font_size=int(font_size), text=name,
+                                          fg=color, bg=Window.BGCOLOR)
+            rect.midbottom = (x, y)
+            self.DISPLAYSURF.blit(surf, rect)
+
+        # draw grids
+        player.his_grid.draw(surface=self.DISPLAYSURF, color1=Window.BLACK, color2=Window.BLUE, color3=Window.GREY)
+        player.opponent_grid.draw(surface=self.DISPLAYSURF, color1=Window.BLACK, color2=Window.RED, color3=Window.GREY)
+
+        # draw table
+        player.fleet_table.draw(surface=self.DISPLAYSURF)
+
+        # show message
+        font_size = self._margin * 0.2
+        surf, rect = self.create_text(font_name=Window.FONT_NAME_1, font_size=int(font_size), text=self._message,
+                                      fg=Window.BLACK, bg=Window.BGCOLOR)
+        rect.midbottom = (self._width // 2, self._height - (self._margin - font_size) // 2)
+        self.DISPLAYSURF.blit(surf, rect)
+
+        # --- Changeable elements ---
+        # redraw boats - the players' ones
+        for boat_ in player.boats:  # this will update existing boats, and created newly ones
+            boat_.draw(self.DISPLAYSURF)
+        # redraw strikes - the opponents' grid
+        for box_ in player.strikes:
+            if box_.is_hit:  # hit
+                box_.reveal(self.DISPLAYSURF)
+            else:  # miss
+                box_.miss(self.DISPLAYSURF)
+        return
+
+    def show_game_over_screen(self, win, animation=False):
+        """
+        Sets the game over screen as currently displayed screen.
+        This happens when game is finished.
+        :param win: bool
+        :param animation: bool
+        :return: None
+        """
+        if animation:
+            pass
+        # self._display_surface.fill(Window.BGCOLOR)  # clear
+        if win:
+            caption = "YOU WON!!!"
+        else:
+            caption = "YOU LOST!"
+        self._show_caption_message_screen(caption=caption, message="Thank you for playing the game with me! :)")
+        return
+
+    def _show_caption_message_screen(self, caption, message):
+        """
+        Private method, just for better organizing our code.
+        We have few screens that contains some caption and
+        appropriate message, so this method gets those
+        parameters and creates named screen.
+        :param caption: str
+        :param message: str
+        :return: None
+        """
+        caption_surf, caption_rect = Window.create_text(Window.FONT_NAME_1, Window.FONT_SIZE_1,
+                                                        caption, Window.BLACK, Window.WHITE)
+        caption_rect.midtop = (self._width / 2, self._height / 4)
+
+        message_surf, message_rect = Window.create_text(Window.FONT_NAME_1, Window.FONT_SIZE_2,
+                                                        message, Window.BLACK, Window.WHITE)
+        message_rect.midbottom = (self._width / 2, self._height * 0.75)
+
+        self.DISPLAYSURF.blit(caption_surf, caption_rect)
+        self.DISPLAYSURF.blit(message_surf, message_rect)
+        return
+
     @staticmethod
-    def _create_text(font_name, font_size, text, fg, bg):
+    def create_text(font_name, font_size, text, fg, bg):
         """
         Private method, just to better organize our code, as we will
         need to create a text many times.
@@ -232,7 +280,27 @@ class Window(object):
         number_of_iterations = time * Window.FPS
         for _ in range(number_of_iterations):
             func()
-            self._main_surface.blit(self._display_surface, self._window_rect)
-            pygame.display.update()
-            Window.FPS_CLOCK.tick(Window.FPS)
+            self.update()
+        return
+
+    def update(self, clear=False):
+        """
+        Updates the window screen.
+        Syntatic sugar.
+        If clear, window is filled with background color
+        to delete any drawing that was before on it.
+        :return: None
+        """
+        if clear:
+            self.clear()
+        pygame.display.update()
+        Window.FPS_CLOCK.tick(Window.FPS)
+        return
+
+    def clear(self):
+        """
+        Clears the display surface.
+        :return: None
+        """
+        self.DISPLAYSURF.fill(Window.BGCOLOR)
         return

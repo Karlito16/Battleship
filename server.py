@@ -79,6 +79,7 @@ class Server(Communication):
         # ##Temporary solution, without the username##
         client = Client(connection=connection, username="")
         client.connected = True
+        self._clients.add_client(client=client)
 
         # runs this loop while client is connected to the server
         while client.connected:
@@ -89,10 +90,11 @@ class Server(Communication):
 
             elif cmd_key == Commands.READY:
                 if Commands.clients_ready(client=client):
-                    if client.in_game:  # this means both of them are in the game
-                        client.game.next_turn = True
-                    else:
+                    if value != "":
+                        # value can be "fleet" - player has drawn the fleet and is now ready for the game start
                         self._commands.game_start(game=client.game)
+                    elif value == "":
+                        client.game.next_turn = True
 
             elif cmd_key == Commands.STAY:
                 self._commands.client_stay(client=client)

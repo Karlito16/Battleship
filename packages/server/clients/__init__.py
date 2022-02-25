@@ -34,10 +34,8 @@ class Clients(Queue):
         Removes all clients.
         :return: bool
         """
-        element = self.iterator.begin()
-        while not self.iterator.end():
-            self.remove_client(client=element.get_value())
-            element = self.iterator.next()
+        while not self == []:
+            self.remove_client(client=self.dequeue())
         return True
 
     def remove_client(self, client):
@@ -46,23 +44,27 @@ class Clients(Queue):
         :param client: <class Client>
         :return: bool
         """
-        tmp_queue = Queue()
-        removed = False
-        while True:
-            element_value = self.dequeue()
-            # queue if empty
-            if element_value is None:
-                break
-            if element_value != client:
-                tmp_queue.enqueue(element_value)
-            else:
-                removed = True
-        while True:
-            element_value = tmp_queue.dequeue()
-            if element_value is None:
-                break
-            self.enqueue(element_value)
-        return removed
+        # tmp_queue = Queue()
+        # removed = False
+        # while True:
+        #     element_value = self.dequeue()
+        #     # queue if empty
+        #     if element_value is None:
+        #         break
+        #     if element_value != client:
+        #         tmp_queue.enqueue(element_value)
+        #     else:
+        #         removed = True
+        # while True:
+        #     element_value = tmp_queue.dequeue()
+        #     if element_value is None:
+        #         break
+        #     self.enqueue(element_value)
+        # return removed
+        if client in self:
+            self.remove(client)
+            return True
+        return False
 
     def in_game(self, reverse=False):
         """
@@ -73,13 +75,18 @@ class Clients(Queue):
         :param reverse: bool
         :return: <class Queue>
         """
+        # ret = Queue()
+        # element = self.iterator.begin()
+        # while not self.iterator.end():
+        #     client = element.get_value()
+        #     if not client.in_game == reverse:
+        #         ret.enqueue(value=client)
+        #     element = self.iterator.next()
+        # return ret
         ret = Queue()
-        element = self.iterator.begin()
-        while not self.iterator.end():
-            client = element.get_value()
+        for client in self:
             if not client.in_game == reverse:
                 ret.enqueue(value=client)
-            element = self.iterator.next()
         return ret
 
     def in_lobby(self):
@@ -88,4 +95,3 @@ class Clients(Queue):
         :return: <class Queue>
         """
         return self.in_game(reverse=True)
-

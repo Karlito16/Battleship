@@ -7,6 +7,7 @@ import functools
 
 class Logger(object):
     INFO = "[INFO]\t\t"
+    ERROR = "[ERROR]\t\t"
 
     _logger = True   # hardcoding
 

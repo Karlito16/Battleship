@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 # package name: client
 
+from packages.public.logger import Logger
+
 
 class Client(object):
 
@@ -94,6 +96,14 @@ class Client(object):
             self._in_game = value
             self._in_lobby = not value
         return
+
+    @property
+    def in_lobby(self):
+        """
+        Getter.
+        :return: bool
+        """
+        return self._in_lobby
 
     @property
     def ready(self):

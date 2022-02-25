@@ -61,7 +61,7 @@ class Games(list):
             return False
         game_ = Game(server=server, client1=client1, client2=client2)
         for client in game_.clients:
-            client.game = game
+            client.game = game_
             client.in_game = True
             server.commands.new_game(client=client)
         self.add_game(game_)
