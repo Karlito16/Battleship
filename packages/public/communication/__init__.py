@@ -89,7 +89,7 @@ class Communication(socket.socket):
             Logger.print(message=f"[Error 37]\t\tFailed to send the message. {exception}")
             return False
         except OSError as exception:
-            Logger.print(message=f"[WinError 10038] An operation was attempted on something that is not a socket\t{exception}")
+            Logger.print(message=f"[Error 92]\t\t{exception}")
             return False
         else:
             return True

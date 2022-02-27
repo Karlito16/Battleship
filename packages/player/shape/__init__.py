@@ -7,11 +7,6 @@ from packages.public.constants import Constants
 
 
 class Shape(object):
-    # directions
-    LEFT = "left"
-    RIGHT = "right"
-    UP = "up"
-    DOWN = "down"
 
     def __init__(self, grid, head, size, direction):
         """
@@ -81,11 +76,11 @@ class Shape(object):
         width = self._head.width
         while len(self._shape) < self._size:
             try:
-                if self._direction == Shape.LEFT:
+                if self._direction == Constants.DIR_LEFT:
                     box = self._grid.get_box_at_pixel(x=x - width * len(self._shape), y=y)
-                elif self._direction == Shape.RIGHT:
+                elif self._direction == Constants.DIR_RIGHT:
                     box = self._grid.get_box_at_pixel(x=x + width * len(self._shape), y=y)
-                elif self._direction == Shape.UP:
+                elif self._direction == Constants.DIR_UP:
                     box = self._grid.get_box_at_pixel(x=x, y=y - width * len(self._shape))
                 else:
                     box = self._grid.get_box_at_pixel(x=x, y=y + width * len(self._shape))

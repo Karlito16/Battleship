@@ -63,11 +63,11 @@ class Battleship(Communication):
         """
         self._fleet_table.add_row("Fleet")
         self._fleet_table.add_row('#', "Name", "Size")
-        for boat_index in range(len(Boat.NAMES)):
-            if Boat.QUANTITY[boat_index] > 0:   # only useful for testing
-                self._fleet_table.add_row(str(Boat.QUANTITY[boat_index]),
-                                          Boat.NAMES[boat_index],
-                                          str(Boat.SIZES[boat_index]))
+        for boat_index in range(len(Constants.BOAT_NAMES)):
+            if Constants.BOAT_QUANTITY[boat_index] > 0:   # only useful for testing
+                self._fleet_table.add_row(str(Constants.BOAT_QUANTITY[boat_index]),
+                                          Constants.BOAT_NAMES[boat_index],
+                                          str(Constants.BOAT_SIZES[boat_index]))
         return
 
     @property

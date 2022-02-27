@@ -5,12 +5,9 @@
 import pygame
 from pygame.locals import *
 from packages.server.clients.client import Client
-from packages.player.box import Box
-from packages.player.boat import Boat
 from packages.player.shape import Shape
-from packages.player.commands import Commands
-from packages.player.grid import Grid
-# from packages.public.logger import Logger
+from packages.player.boat import Boat
+from packages.public.constants import Constants
 
 
 class Player(Client):
@@ -122,7 +119,7 @@ class Player(Client):
         boat_order = _get_all_boats_sizes()
         created_boats = 0
         boat_size = boat_order[created_boats]
-        direction = Shape.RIGHT
+        direction = Constants.DIR_RIGHT
         create_boat = False
         highlighted_box = None
         highlighted_shape = None
@@ -143,13 +140,13 @@ class Player(Client):
             for event in pygame.event.get(KEYDOWN):
                 key_pressed = True
                 if event.key == K_LEFT:
-                    direction = Shape.LEFT
+                    direction = Constants.DIR_LEFT
                 elif event.key == K_RIGHT:
-                    direction = Shape.RIGHT
+                    direction = Constants.DIR_RIGHT
                 elif event.key == K_UP:
-                    direction = Shape.UP
+                    direction = Constants.DIR_UP
                 elif event.key == K_DOWN:
-                    direction = Shape.DOWN
+                    direction = Constants.DIR_DOWN
                 elif event.key == K_RETURN:
                     create_boat = True
                 else:
@@ -161,7 +158,7 @@ class Player(Client):
                                                             highlighted_box=highlighted_box, grid_=self._his_grid)
             # highlight the box
             if highlighted_box:
-                highlighted_box.highlight(self._window.DISPLAYSURF, self._window.BLUE)
+                highlighted_box.highlight(self._window.DISPLAYSURF, Constants.BLUE)
 
                 # create shape
             if mouse_clicked and covered_box and (highlighted_shape is None or covered_box != highlighted_shape.head):
@@ -172,7 +169,7 @@ class Player(Client):
             if highlighted_shape and key_pressed and not create_boat:  # player changed the orientation of the shape
                 highlighted_shape.change_orientation(direction=direction)
             if highlighted_shape:
-                color = {True: self._window.BLUE, False: self._window.RED}[highlighted_shape.is_valid]
+                color = {True: Constants.BLUE, False: Constants.RED}[highlighted_shape.is_valid]
                 highlighted_shape.highlight(self._window.DISPLAYSURF, color)
 
                 # create a boat
@@ -191,8 +188,8 @@ class Player(Client):
 
                 # highlight the row in the fleet table
             self._fleet_table.highlight_row(surface=self._window.DISPLAYSURF,
-                                            index=Boat.SIZES.index(boat_size) + 2,
-                                            color=self._window.GREEN)
+                                            index=Constants.BOAT_SIZES.index(boat_size) + 2,
+                                            color=Constants.GREEN)
 
             # update the screen
             self._window.update()
@@ -230,7 +227,7 @@ class Player(Client):
                                                             highlighted_box=highlighted_box, grid_=self._opponent_grid)
             # highlight the box
             if highlighted_box and highlighted_box not in self._strikes:
-                highlighted_box.highlight(surface=self._window.DISPLAYSURF, color=self._window.RED)
+                highlighted_box.highlight(surface=self._window.DISPLAYSURF, color=Constants.RED)
 
             # if mouse_clicked and highlighted_box is not None and not highlighted_box.is_hit:
             if mouse_clicked and highlighted_box is not None and highlighted_box not in self._strikes:
@@ -267,8 +264,8 @@ class Player(Client):
         else:
             raise ValueError("Invalid strike coordinates!")
         # check box type
-        if box_.type != Box.EMPTY:  # hit!
-            box_.color = self._window.BLACK
+        if box_.type != Constants.EMPTY:  # hit!
+            box_.color = Constants.BLACK
             box_.hit(self._window.DISPLAYSURF)
         return box_.type
 
@@ -282,12 +279,12 @@ class Player(Client):
         # update the visual part
         from packages.public.logger import Logger
         Logger.print(message=f"Checking box type...{type_}", type_=Logger.INFO)
-        if type_ == Box.EMPTY:  # miss
+        if type_ == Constants.EMPTY:  # miss
             # it's not a hit really, but for attacker, this will be his miss ("X") - marks the miss on the opponent_grid
             self._striking_box.miss(self._window.DISPLAYSURF)
         else:
             # hit!
-            self._striking_box.color = Boat.BOAT_COLORS[type_]
+            self._striking_box.color = Constants.BOAT_COLORS[type_]
             self._striking_box.reveal(surface=self._window.DISPLAYSURF)
         return
 
@@ -297,22 +294,6 @@ class Player(Client):
         :return: None
         """
         self._window.message = "DEFEND!!!"
-        # while not self._attack:
-        #     # refresh the screen (that is, clear) so we can see changes
-        #     self._window.clear()
-        #     self._window.show_game_screen(self._his_grid, self._opponent_grid, self._fleet_table)  # redraw
-        #     # redraw boats - the players' ones
-        #     for boat_ in self._boats:  # this will update existing boats, and created newly ones
-        #         boat_.draw(self._window.DISPLAYSURF)
-        #     # redraw strikes
-        #     for box_ in self._strikes:
-        #         if box_.is_hit:  # hit
-        #             box_.reveal(self._window.DISPLAYSURF, Boat.BOAT_COLORS[box_.type])
-        #         else:  # miss
-        #             box_.miss(self._window.DISPLAYSURF)
-        #
-        #     # check server communication
-        #     self.connection.commands.check()
         return
 
     def is_defeated(self):
@@ -334,8 +315,8 @@ def _get_all_boats_sizes():
     :return: list
     """
     list_ = []
-    for i in range(len(Boat.NAMES)):
-        list_ += [Boat.SIZES[i]] * Boat.QUANTITY[i]
+    for i in range(len(Constants.BOAT_NAMES)):
+        list_ += [Constants.BOAT_SIZES[i]] * Constants.BOAT_QUANTITY[i]
     return list_
 
 
@@ -354,7 +335,7 @@ def _on_mouse_motion(movement, mousex, mousey, highlighted_box, grid_):
     """
     if movement:  # if mouse has been moved
         covered_box = grid_.get_box_at_pixel(mousex, mousey)
-        if covered_box and covered_box != highlighted_box and covered_box.type == Box.EMPTY:
+        if covered_box and covered_box != highlighted_box and covered_box.type == Constants.EMPTY:
             # in order to highlight the box, it needs to be empty and not already highlighted
             highlighted_box = covered_box
         elif covered_box is None and not grid_.area.collidepoint(mousex, mousey):

@@ -57,6 +57,13 @@ class Constants:
     # Grid
     SEPARATOR_WIDTH = 2  # px
 
+    # Shape
+    # directions
+    DIR_LEFT = "left"
+    DIR_RIGHT = "right"
+    DIR_UP = "up"
+    DIR_DOWN = "down"
+
     # Boat
     BOAT_NAMES = ["Aircraft Carrier", "Battleship", "Cruiser", "Destroyer", "Submarine"]
     BOAT_QUANTITY = [1, 1, 1, 2, 2]
