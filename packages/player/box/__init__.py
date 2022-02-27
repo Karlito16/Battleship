@@ -3,13 +3,12 @@
 # package name: box
 
 import pygame
+from packages.public.constants import Constants
 from packages.player.area import Area
 from packages.player.window import Window
 
 
 class Box(Area):
-    MARGIN = 2  # px
-    EMPTY = -1
 
     def __init__(self, rect):
         """
@@ -23,7 +22,7 @@ class Box(Area):
         super().__init__(area=rect)
 
         self._hit = False   # True if boat has been hit on that place
-        self._type = Box.EMPTY     # boat type, -1 for empty box ("sea")
+        self._type = Constants.EMPTY     # boat type, -1 for empty box ("sea")
         self._color = None  # color of the box
 
     @property
@@ -34,7 +33,7 @@ class Box(Area):
         both left and right margins.
         :return: int
         """
-        return self.width - 2 * Box.MARGIN
+        return self.width - 2 * Constants.BOX_MARGIN
 
     @property
     def is_hit(self):
@@ -85,7 +84,7 @@ class Box(Area):
         :param surface: <class Surface>
         :return: None
         """
-        pygame.draw.rect(surface, self._color, (self.x + Box.MARGIN, self.y + Box.MARGIN, self.size, self.size))
+        pygame.draw.rect(surface, self._color, (self.x + Constants.BOX_MARGIN, self.y + Constants.BOX_MARGIN, self.size, self.size))
         return
 
     def highlight(self, surface, color):
@@ -95,7 +94,7 @@ class Box(Area):
         :param color: str
         :return: None
         """
-        pygame.draw.rect(surface, color, self.area, Box.MARGIN)
+        pygame.draw.rect(surface, color, self.area, Constants.BOX_MARGIN)
         return
 
     def hit(self, surface):
@@ -108,8 +107,8 @@ class Box(Area):
         """
         self.fill(surface)
         font_size = int(self.size * 0.8)
-        surf, rect = Window.create_text(font_name=Window.FONT_NAME_1, font_size=font_size, text="X",
-                                        fg=Window.WHITE, bg=Window.BLACK)
+        surf, rect = Window.create_text(font_name=Constants.FONT_NAME_1, font_size=font_size, text="X",
+                                        fg=Constants.WHITE, bg=Constants.BLACK)
         rect.center = self.area.center
         surface.blit(surf, rect)
         self._hit = True
@@ -131,8 +130,8 @@ class Box(Area):
         :param surface: <class Surface>
         :return: None
         """
-        surf, rect = Window.create_text(font_name=Window.FONT_NAME_1, font_size=Window.FONT_SIZE_4, text="X",
-                                        fg=Window.BLACK, bg=Window.BGCOLOR)
+        surf, rect = Window.create_text(font_name=Constants.FONT_NAME_1, font_size=Constants.FONT_SIZE_4, text="X",
+                                        fg=Constants.BLACK, bg=Constants.BGCOLOR)
         rect.center = self.area.center
         surface.blit(surf, rect)
         return

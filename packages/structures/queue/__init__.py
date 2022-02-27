@@ -13,13 +13,6 @@ class Queue(list):
         """
         super().__init__()
 
-    # def __len__(self):
-    #     """
-    #     special method len
-    #     :return: int
-    #     """
-    #     return super().__len__()
-
     def enqueue(self, value):
         """
         Adds new element in queue.

@@ -71,6 +71,7 @@ class Timer(RaisingThread):
         if self._end:
             raise RuntimeError("Stopwatch ends.")
         time.sleep(Timer._second)
+        print("Stopwatch")
         self.stopwatch()
 
     @staticmethod

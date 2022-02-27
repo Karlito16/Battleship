@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # package name: shape
 
-from packages.player.box import Box
+from packages.public.constants import Constants
 # from packages.public.logger import Logger
 
 
@@ -96,7 +96,7 @@ class Shape(object):
                 if box is None:     # box will be None if it is out of the grid sizes
                     valid = False
                     return valid
-                elif box.type != Box.EMPTY:
+                elif box.type != Constants.EMPTY:
                     valid = False
                 self._shape.append(box)
         return valid

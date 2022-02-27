@@ -4,17 +4,12 @@
 
 import threading
 from packages.structures.queue import Queue
+from packages.public.constants import Constants
 from packages.public.communication import Communication
 from packages.public.logger import Logger
 
 
 class Commands(Queue):
-    GAME = "-game"
-    READY = "-ready"
-    STRIKE = "-strike"
-    LEFT = "-left"
-    STAY = "-stay"
-    DEFEND = "-defend"
 
     def __init__(self, player):
         """
@@ -88,13 +83,13 @@ class Commands(Queue):
             return
         if key is not None and parameters is not None:  # we have at least one unread message
             # handle the command
-            if key == Commands.GAME and self._player.in_lobby:
+            if key == Constants.CMD_GAME and self._player.in_lobby:
                 # self._player.in_game = True
                 self.game()
-            elif key == Commands.LEFT:  # opponent left the game
+            elif key == Constants.CMD_LEFT:  # opponent left the game
                 # self._player.in_game = False  # this will stop the game and return player to the lobby, if connected
                 self.left()
-            elif key == Commands.STRIKE:
+            elif key == Constants.CMD_STRIKE:
                 if parameters == "":    # we are attacker
                     self.strike()
                 elif '|' in parameters:     # we are attacked
@@ -102,7 +97,7 @@ class Commands(Queue):
                 elif parameters == "all" or parameters.strip('-').isdigit():
                     # opponent is defeated or informs us about our strike
                     self.strike(parameters)
-            elif key == Commands.DEFEND:
+            elif key == Constants.CMD_DEFEND:
                 # we are defender
                 self.defend()
         return
@@ -114,7 +109,7 @@ class Commands(Queue):
         Informs server about leaving.
         :return: None
         """
-        Communication.send_(connection=self._player.connection, message=f"{Commands.LEFT};")
+        Communication.send_(connection=self._player.connection, message=f"{Constants.CMD_LEFT};")
         self._player.in_game = False
         self._player.connection.close()
         return
@@ -144,7 +139,7 @@ class Commands(Queue):
         parameters = ""
         if args != ():
             parameters = '|'.join(args)
-        Communication.send_(connection=self._player.connection, message=f"{Commands.READY};{parameters}")
+        Communication.send_(connection=self._player.connection, message=f"{Constants.CMD_READY};{parameters}")
 
     def strike(self, *args, **kwargs):
         """
@@ -184,7 +179,7 @@ class Commands(Queue):
         elif len(args) == 1:    # case 2 and 3: -strike;type (send, receive) or -strike;all (send, receive)
             if send:    # defender
                 Communication.send_(connection=self._player.connection,
-                                    message=f"{Commands.STRIKE};{str(args[0])}")
+                                    message=f"{Constants.CMD_STRIKE};{str(args[0])}")
             else:   # attacker
                 value = args[0]
                 if value.strip('-').isdigit():  # box type
@@ -198,7 +193,7 @@ class Commands(Queue):
         elif len(args) == 2:    # case 4: -strike;i|j (send, receive)
             if send:    # attacker
                 Communication.send_(connection=self._player.connection,
-                                    message=f"{Commands.STRIKE};{str(args[0])}|{str(args[1])}")
+                                    message=f"{Constants.CMD_STRIKE};{str(args[0])}|{str(args[1])}")
             else:   # defender
                 box_type = self._player.check_strike(int(args[0]), int(args[1]))
                 self.strike(box_type, send=True)

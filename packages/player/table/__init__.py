@@ -3,6 +3,7 @@
 # package name: table
 
 import pygame
+from packages.public.constants import Constants
 from packages.player.area import Area
 from packages.player.window import Window
 
@@ -158,8 +159,8 @@ class Table(Area):
                 if text is not None:
                     tmp_font_size = font_size
                     while True:
-                        surf, rect = Window.create_text(font_name=Window.FONT_NAME_1, font_size=tmp_font_size,
-                                                        text=text, fg=Window.BLACK, bg=Window.BGCOLOR)
+                        surf, rect = Window.create_text(font_name=Constants.FONT_NAME_1, font_size=tmp_font_size,
+                                                        text=text, fg=Constants.BLACK, bg=Constants.BGCOLOR)
                         if rect.width <= col_widths[col]:
                             break
                         tmp_font_size -= 2 * self._row_margin
@@ -182,8 +183,9 @@ class Table(Area):
         if index < 0 or index > self._rows:
             return False
 
+        highlight_width = int(self._row_margin * 0.5)
         row_height = self.height // self._rows
         x = self.x + self.margin - self._row_margin
-        y = self.y + self.margin + (row_height + self._row_margin) * index
-        pygame.draw.rect(surface, color, pygame.Rect(x, y, self.width, row_height), self._row_margin)
+        y = self.y + self.margin - self._row_margin // 2 + (row_height + self._row_margin) * index
+        pygame.draw.rect(surface, color, pygame.Rect(x, y, self.width, row_height), highlight_width)
         return True

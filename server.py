@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
 import threading
 
 from packages.server.clients import Clients
@@ -8,15 +9,16 @@ from packages.server.commands import Commands
 from packages.public.communication import Communication
 from packages.public.logger import Logger
 from packages.server.games import Games
+from packages.public.constants import Constants
 
 
 class Server(Communication):
 
-    def __init__(self):
+    def __init__(self, ip_address):
         """
         Constructor.
         """
-        super().__init__()
+        super().__init__(ip_address=ip_address)
         self._clients = Clients()
         self._games = Games()
         self._commands = Commands(server=self)
@@ -68,15 +70,7 @@ class Server(Communication):
         :param connection: <class socket>
         :return: None
         """
-        # ##Right now, we won't request client for this username##
-        # client = Commands.get_username(connection=connection)
-        # if client:
-        #     client.connected = True
-        #     self._clients.add_client(client=client)
-        # else:
-        #     return
-
-        # ##Temporary solution, without the username##
+        # create and init client object
         client = Client(connection=connection, username="")
         client.connected = True
         self._clients.add_client(client=client)
@@ -85,21 +79,21 @@ class Server(Communication):
         while client.connected:
             cmd_key, value = self.receive(connection=connection)
 
-            if cmd_key == Commands.LEFT:
-                self._commands.client_left(client=client)
+            if cmd_key == Constants.CMD_LEFT:
+                self._commands.left(client=client)
 
-            elif cmd_key == Commands.READY:
-                if Commands.clients_ready(client=client):
+            elif cmd_key == Constants.CMD_READY:
+                if Commands.ready(client=client):
                     if value != "":
                         # value can be "fleet" - player has drawn the fleet and is now ready for the game start
-                        self._commands.game_start(game=client.game)
+                        client.game.start()
                     elif value == "":
                         client.game.next_turn = True
 
-            elif cmd_key == Commands.STAY:
-                self._commands.client_stay(client=client)
+            elif cmd_key == Constants.CMD_STAY:
+                self._commands.stay(client=client)
 
-            elif cmd_key == Commands.STRIKE:
+            elif cmd_key == Constants.CMD_STRIKE:
                 if value == "":
                     self._commands.strike(client=client)
                 elif '|' in value:
@@ -113,7 +107,11 @@ class Server(Communication):
 
 
 def main():
-    server = Server()
+    # server = Server(ip_address=socket.gethostbyname(socket.gethostname()))
+    server = Server(ip_address="192.168.5.120")
+    # print(socket.gethostname())
+    # print(socket.gethostbyname("KarlitoHome"))   # error?
+    # print(socket.gethostbyaddr("192.168.5.120"))
     server.start_server(func=server.running)
 
 

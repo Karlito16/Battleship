@@ -3,12 +3,12 @@
 # package name: game
 
 import threading
+from packages.public.constants import Constants
 from packages.public.timer import Timer
 from packages.public.logger import Logger
 
 
 class Game(threading.Thread):
-    _game_loop_time_offset = 1e-9
 
     def __init__(self, server, client1, client2):
         """
@@ -23,7 +23,6 @@ class Game(threading.Thread):
         super().__init__(target=self._run)
         self._running = False
         self._next_turn = True
-        self._stopwatch = Timer()
 
     def __str__(self):
         """
@@ -46,7 +45,6 @@ class Game(threading.Thread):
         :return: None
         """
         self._running = False
-        self._stopwatch.end()
         return
 
     def get_opponent(self, client):
@@ -58,15 +56,6 @@ class Game(threading.Thread):
         if client == self._client1:
             return self._client2
         return self._client1
-
-    def kill(self):
-        """
-        Kills the game. This is not an ordinary end of game.
-        Caused by client disconnection, etc.
-        :return: None
-        """
-        self._stopwatch.end()
-        return
 
     @property
     def next_turn(self):
@@ -97,28 +86,16 @@ class Game(threading.Thread):
     def _run(self):
         """
         Thread. Main game loop.
-        Game can be either killed or ended.
-        Only difference is that when killed,
-        atribute running will not be changed.
         :return: None
         """
         self._running = True
-        try:
-            self._stopwatch.start()
-            while self._running:
-                for client in self.clients:
-                    self._server.commands.strike(client=client)
-                    self._next_turn = False
-                    while not self._next_turn:
-                        Timer.wait(t=Game._game_loop_time_offset)
-            self._stopwatch.join()
-        except RuntimeError:
-            if self._running:
-                # breaks the game loop, probably because one of players lost connection etc.
-                Logger.print(f"[Warning 108]\t\tGame {self} has been killed.")
-            else:
-                # regular break of the loop
-                Logger.print(f"Game {self.__str__()} has finished!")
+        while self._running:
+            for client in self.clients:
+                self._server.commands.strike(client=client)
+                self._next_turn = False
+                while self._running and not self._next_turn:
+                    Timer.wait(t=Constants.GAME_LOOP_TIME_OFFSET)
+        Logger.print(f"Game {self.__str__()} has finished!")
         return
 
     @property

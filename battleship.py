@@ -4,6 +4,7 @@
 import sys
 import pygame
 from pygame.locals import *
+from packages.public.constants import Constants
 from packages.public.communication import Communication
 from packages.player import Player
 from packages.player.window import Window
@@ -15,16 +16,6 @@ from packages.public.logger import Logger
 
 
 class Battleship(Communication):
-    SERVER_HOSTNAME = "Karlito"
-    GAME_CAPTION = "Battleship"
-    WIN_WIDTH = 1080   # px
-    WIN_HEIGHT = 720   # px
-    WIN_MARGIN = 70    # px
-    GRID_SIZE = 10
-    GRID_BORDER_WIDTH = 4   # px
-    GRID_HIGHLIGHT_BORDER_WIDTH = 1  # px
-    TABLE_MARGIN = 10   # px
-    TABLE_ROW_MARGIN = 4    # px
 
     def __init__(self):
         """
@@ -33,20 +24,20 @@ class Battleship(Communication):
         """
         super().__init__()
         self._init_surf_areas()
-        self._window = Window(caption=Battleship.GAME_CAPTION, width=Battleship.WIN_WIDTH,
-                              height=Battleship.WIN_HEIGHT, margin=Battleship.WIN_MARGIN)
-        self._player_grid = Grid(rect=self._player_grid_rect, size=Battleship.GRID_SIZE,
-                                 border_width=Battleship.GRID_BORDER_WIDTH,
-                                 highlight_border_width=Battleship.GRID_HIGHLIGHT_BORDER_WIDTH)
-        self._opponent_grid = Grid(rect=self._opponent_grid_rect, size=Battleship.GRID_SIZE,
-                                   border_width=Battleship.GRID_BORDER_WIDTH,
-                                   highlight_border_width=Battleship.GRID_HIGHLIGHT_BORDER_WIDTH)
-        self._fleet_table = Table(rect=self._fleet_table_rect, margin=Battleship.TABLE_MARGIN,
-                                  row_margin=Battleship.TABLE_ROW_MARGIN)
+        self._window = Window(caption=Constants.GAME_CAPTION, width=Constants.WIN_WIDTH,
+                              height=Constants.WIN_HEIGHT, margin=Constants.WIN_MARGIN)
+        self._player_grid = Grid(rect=self._player_grid_rect, size=Constants.GRID_SIZE,
+                                 border_width=Constants.GRID_BORDER_WIDTH,
+                                 highlight_border_width=Constants.GRID_HIGHLIGHT_BORDER_WIDTH)
+        self._opponent_grid = Grid(rect=self._opponent_grid_rect, size=Constants.GRID_SIZE,
+                                   border_width=Constants.GRID_BORDER_WIDTH,
+                                   highlight_border_width=Constants.GRID_HIGHLIGHT_BORDER_WIDTH)
+        self._fleet_table = Table(rect=self._fleet_table_rect, margin=Constants.TABLE_MARGIN,
+                                  row_margin=Constants.TABLE_ROW_MARGIN)
         self._fill_table_data()
         self._player = Player(window=self._window, his_grid=self._player_grid, opponent_grid=self._opponent_grid,
                               fleet_table=self._fleet_table, connection=self, username="")     # TODO: add username
-        self._player.connected = self.connect_to_server(hostname=Battleship.SERVER_HOSTNAME)
+        self._player.connected = self.connect_to_server(ip_address=Constants.SERVER_HOSTNAME)
         self._commands = Commands(player=self._player)
 
     def _init_surf_areas(self):
@@ -56,9 +47,9 @@ class Battleship(Communication):
         :return: None
         """
         # easier variable names
-        win_w = Battleship.WIN_WIDTH
-        win_h = Battleship.WIN_HEIGHT
-        margin = Battleship.WIN_MARGIN
+        win_w = Constants.WIN_WIDTH
+        win_h = Constants.WIN_HEIGHT
+        margin = Constants.WIN_MARGIN
         self._player_grid_rect = pygame.Rect(margin, 2 * margin, win_w - win_h, win_w - win_h)
         self._opponent_grid_rect = pygame.Rect(2 * margin + win_w - win_h, 2 * margin, win_h - 3 * margin, win_h - 3 * margin)
         self._fleet_table_rect = pygame.Rect(margin, 2.5 * margin + win_w - win_h, win_w - win_h, 2 * win_h - win_w - 3.5 * margin)
@@ -135,12 +126,12 @@ class Battleship(Communication):
         if self._player.connected:
             self._commands.trace()  # starts the new thread
         self._window.show_welcome_screen()
-        self._window.freeze(time=Window.WELCOME_SCREEN_SLEEP_TIME, func=self.check_for_quit)
+        self._window.freeze(time=Constants.WELCOME_SCREEN_SLEEP_TIME, func=self.check_for_quit)
 
         if not self._player.connected:  # Connecting with the server failed!
             self._window.clear()
             self._window.show_connection_failed_screen()
-            self._window.freeze(time=Window.CONNECTION_FAILED_SLEEP_TIME, func=self.check_for_quit)
+            self._window.freeze(time=Constants.CONNECTION_FAILED_SLEEP_TIME, func=self.check_for_quit)
             self._terminate()   # closes the game automatically
 
         self._window.show_waiting_for_player_screen()
@@ -184,9 +175,10 @@ class Battleship(Communication):
                 self._player.strike()
 
             # update the screen
-            # ### we need to clear up display surface, as highlighted boxes and shapes are constantly changing
-            # self.connection.window.display_surface.fill(Window.BGCOLOR)  # clear
             self._window.update()
+        self._window.show_game_screen(self._player)
+        self._window.show_game_over_screen_alpha(win=self._player.won)
+        self._window.freeze(time=5, func=self.check_for_quit)
         return
 
     @staticmethod

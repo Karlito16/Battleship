@@ -2,17 +2,10 @@
 # -*- coding: utf-8 -*-
 # package name: boat
 
-from packages.player.window import Window
+from packages.public.constants import Constants
 
 
 class Boat(object):
-    NAMES = ["Aircraft Carrier", "Battleship", "Cruiser", "Destroyer", "Submarine"]
-    # QUANTITY = [1, 1, 1, 2, 2]
-    QUANTITY = [1, 1, 1, 2, 2]  # temp, for testing
-    SIZES = [5, 4, 3, 2, 1]
-    BOAT_COLORS = [Window.RED, Window.BLUE, Window.GREEN, Window.YELLOW, Window.ORANGE]
-    assert len(NAMES) == len(QUANTITY) == len(SIZES), \
-        "Invalid data for boat names, their quantity, size and color values!"
 
     def __init__(self, shape):
         """
@@ -23,8 +16,8 @@ class Boat(object):
         """
         self._shape = shape
         for box in self.shape:
-            box.type = Boat.SIZES.index(self._shape.size)
-            box.color = Boat.BOAT_COLORS[box.type]
+            box.type = Constants.BOAT_SIZES.index(self._shape.size)
+            box.color = Constants.BOAT_COLORS[box.type]
 
     @property
     def shape(self):
@@ -55,5 +48,5 @@ class Boat(object):
         :param piece: <class Box>
         :return: None
         """
-        piece.fill(surface=surface, color=Boat.BOAT_COLORS[Boat.SIZES.index(piece.type)])
+        piece.fill(surface=surface, color=Constants.BOAT_COLORS[Constants.BOAT_SIZES.index(piece.type)])
         return

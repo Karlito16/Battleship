@@ -15,32 +15,32 @@ class Communication(socket.socket):
     _port = 10000
     _listen = 5
 
-    def __init__(self, hostname=None):
+    def __init__(self, ip_address=None):
         """
         Constructor.
         """
         super().__init__()
-        if hostname:
-            self._hostname = hostname
+        if ip_address:
+            self._ip_address = ip_address
         else:
-            self._hostname = socket.gethostname()
+            self._ip_address = socket.gethostbyname(socket.gethostname())
 
-    def connect_to_server(self, hostname, port=None):
+    def connect_to_server(self, ip_address, port=None):
         """
         Method connects client with the server.
-        Hostname is equivalent to the IP address of the server.
+        IP address (IPv4) represends the ip address of the server.
         Port doesn't need to be defined, and in that case,
         we will try to use default port.
         Method returns True if connecting was succesfull,
         otherwise prints the error message and returns False.
-        :param hostname: str
+        :param ip_address: str
         :param port: int
         :return: bool
         """
         if port is None:
             port = Communication._port
         try:
-            self.connect((hostname, port))
+            self.connect((ip_address, port))
             return True
         except Exception as e:
             Logger.print(message=f"[Error 43]\t\tUnable to connect to the server.\n{e}")
@@ -56,7 +56,7 @@ class Communication(socket.socket):
         :return: bool
         """
         try:
-            self.bind((self._hostname, Communication._port))
+            self.bind((self._ip_address, Communication._port))
             self.listen(Communication._listen)
         except Exception as e:
             Logger.print(f"[Error 38]\t\t{e}")
@@ -86,8 +86,10 @@ class Communication(socket.socket):
             connection.send(message.encode(Communication._coding))
             time.sleep(Communication._send_sleep)
         except RuntimeError as exception:
-            # print(f"[Error 37]\t{exception}\nFailed to send the message.")
             Logger.print(message=f"[Error 37]\t\tFailed to send the message. {exception}")
+            return False
+        except OSError as exception:
+            Logger.print(message=f"[WinError 10038] An operation was attempted on something that is not a socket\t{exception}")
             return False
         else:
             return True
@@ -126,9 +128,6 @@ class Communication(socket.socket):
             return
         else:
             if command_key is None:
-                # if "-result" in message or "-leaderboard" in message or "-end" in message:
-                #     return message.split(";")   # because dictionary has ':' in his syntax
-                # else:
                 return message.split(";")
             else:
                 cmd_key, value = message.split(";")

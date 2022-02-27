@@ -5,10 +5,10 @@ import pygame
 
 from packages.player.box import Box
 from packages.player.area import Area
+from packages.public.constants import Constants
 
 
 class Grid(Area):
-    SEPARATOR_WIDTH = 1     # px
 
     def __init__(self, rect, size, border_width, highlight_border_width):
         """
@@ -146,9 +146,9 @@ class Grid(Area):
         # draw lines
         line_lenght = self.width - 2 * (self._border_width + self._highlight_border_width)
         for box in self.row(0)[1:]:
-            pygame.draw.line(surface, color3, (box.x, box.y), (box.x, box.y + line_lenght), Grid.SEPARATOR_WIDTH)
+            pygame.draw.line(surface, color3, (box.x, box.y), (box.x, box.y + line_lenght), Constants.SEPARATOR_WIDTH)
         for box in self.column(0)[1:]:
-            pygame.draw.line(surface, color3, (box.x, box.y), (box.x + line_lenght, box.y), Grid.SEPARATOR_WIDTH)
+            pygame.draw.line(surface, color3, (box.x, box.y), (box.x + line_lenght, box.y), Constants.SEPARATOR_WIDTH)
         return
 
     def get_index_of(self, box):

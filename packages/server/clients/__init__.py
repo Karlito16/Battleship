@@ -44,54 +44,35 @@ class Clients(Queue):
         :param client: <class Client>
         :return: bool
         """
-        # tmp_queue = Queue()
-        # removed = False
-        # while True:
-        #     element_value = self.dequeue()
-        #     # queue if empty
-        #     if element_value is None:
-        #         break
-        #     if element_value != client:
-        #         tmp_queue.enqueue(element_value)
-        #     else:
-        #         removed = True
-        # while True:
-        #     element_value = tmp_queue.dequeue()
-        #     if element_value is None:
-        #         break
-        #     self.enqueue(element_value)
-        # return removed
         if client in self:
             self.remove(client)
             return True
         return False
 
-    def in_game(self, reverse=False):
+    def _in_check(self, reverse):
         """
-        Returns queue of clients that are currently in game.
         Parameter reverse simply means what we want to check.
         If set to False, we check clients that are in game.
         Otherwise, we check clients that are in lobby.
         :param reverse: bool
         :return: <class Queue>
         """
-        # ret = Queue()
-        # element = self.iterator.begin()
-        # while not self.iterator.end():
-        #     client = element.get_value()
-        #     if not client.in_game == reverse:
-        #         ret.enqueue(value=client)
-        #     element = self.iterator.next()
-        # return ret
         ret = Queue()
         for client in self:
             if not client.in_game == reverse:
                 ret.enqueue(value=client)
         return ret
 
+    def in_game(self):
+        """
+        Returns queue of clients that are currently in game.
+        :return: <class Queue>
+        """
+        return self._in_check(reverse=False)
+
     def in_lobby(self):
         """
         Returns queue of clients that are currently in lobby.
         :return: <class Queue>
         """
-        return self.in_game(reverse=True)
+        return self._in_check(reverse=True)

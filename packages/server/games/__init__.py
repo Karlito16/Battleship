@@ -13,7 +13,6 @@ class Games(list):
         Constructor.
         """
         super().__init__()
-        self._size = 0
 
     def add_game(self, game_):
         """
@@ -22,7 +21,6 @@ class Games(list):
         :return: None
         """
         self.append(game_)
-        self._size += 1
         return
 
     def available(self):
@@ -31,7 +29,7 @@ class Games(list):
         Depends on number of currently active games.
         :return: bool
         """
-        return self._size < Games._games_at_once_limit
+        return len(self) < Games._games_at_once_limit
 
     def end_game(self, game_):
         """
@@ -63,7 +61,7 @@ class Games(list):
         for client in game_.clients:
             client.game = game_
             client.in_game = True
-            server.commands.new_game(client=client)
+            server.commands.game(client=client)
         self.add_game(game_)
         return True
 
@@ -73,13 +71,4 @@ class Games(list):
         :param game_: <class Game>
         :return: <class Game>
         """
-        self._size -= 1
         return self.pop(self.index(game_))
-
-    @property
-    def size(self):
-        """
-        Returns number of active games.
-        :return: int
-        """
-        return self._size

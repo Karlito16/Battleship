@@ -6,13 +6,10 @@ import pygame
 from pygame.locals import *
 from packages.server.clients.client import Client
 from packages.player.box import Box
-# from packages.player.window import Window
 from packages.player.boat import Boat
 from packages.player.shape import Shape
 from packages.player.commands import Commands
 from packages.player.grid import Grid
-
-
 # from packages.public.logger import Logger
 
 
@@ -232,10 +229,11 @@ class Player(Client):
             covered_box, highlighted_box = _on_mouse_motion(movement=movement, mousex=mousex, mousey=mousey,
                                                             highlighted_box=highlighted_box, grid_=self._opponent_grid)
             # highlight the box
-            if highlighted_box:
+            if highlighted_box and highlighted_box not in self._strikes:
                 highlighted_box.highlight(surface=self._window.DISPLAYSURF, color=self._window.RED)
 
-            if mouse_clicked and highlighted_box is not None and not highlighted_box.is_hit:
+            # if mouse_clicked and highlighted_box is not None and not highlighted_box.is_hit:
+            if mouse_clicked and highlighted_box is not None and highlighted_box not in self._strikes:
                 # attack
                 self.connection.commands.strike(highlighted_box.x, highlighted_box.y, send=True)
                 self._striking_box = highlighted_box

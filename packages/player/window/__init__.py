@@ -3,32 +3,10 @@
 # package name: window
 
 import pygame
+from packages.public.constants import Constants
 
 
 class Window(object):
-    WHITE = (255, 255, 255)
-    BLACK = (0, 0, 0)
-    RED = (255, 0, 0)
-    BLUE = (0, 0, 255)
-    GREY = (128, 128, 128)
-    YELLOW = (255, 255, 0)
-    GREEN = (0, 255, 0)
-    ORANGE = (255, 165, 0)
-    PINK = (255, 192, 203)
-
-    BGCOLOR = WHITE
-
-    FONT_NAME_1 = "freesansbold.ttf"
-    FONT_SIZE_1 = 72
-    FONT_SIZE_2 = 36
-    FONT_SIZE_3 = 24
-    FONT_SIZE_4 = 18
-
-    FPS = 30
-    FPS_CLOCK = pygame.time.Clock()
-
-    WELCOME_SCREEN_SLEEP_TIME = 2    # seconds
-    CONNECTION_FAILED_SLEEP_TIME = 2    # seconds
 
     def __init__(self, caption, width, height, margin):
         """
@@ -51,9 +29,8 @@ class Window(object):
         # init the window
         pygame.init()
         self._display_surf = pygame.display.set_mode((self._width, self._height))    # constant, display surface for our window
-        self.DISPLAYSURF.fill(Window.BGCOLOR)
+        self.DISPLAYSURF.fill(Constants.BGCOLOR)
         pygame.display.set_caption(self._caption)
-        # self._window_rect = (0, 0, self._width, self._height)
 
     @property
     def caption(self):
@@ -165,34 +142,35 @@ class Window(object):
 
         # show title
         font_size = self._margin * 0.9
-        surf, rect = self.create_text(font_name=Window.FONT_NAME_1, font_size=int(font_size), text=self._caption,
-                                      fg=Window.BLACK, bg=Window.BGCOLOR)
+        surf, rect = self.create_text(font_name=Constants.FONT_NAME_1, font_size=int(font_size), text=self._caption,
+                                      fg=Constants.BLACK, bg=Constants.BGCOLOR)
         rect.midtop = (self._width // 2, (self._margin - font_size) // 2)
         self.DISPLAYSURF.blit(surf, rect)
 
         # show grid names
         font_size = self._margin * 0.25
         for x, y, name, color in (
-                (player.his_grid.x + player.his_grid.width / 2, player.his_grid.y - 5, "You", Window.BLUE),
-                (player.opponent_grid.x + player.opponent_grid.width / 2, player.opponent_grid.y - 5, "Enemy", Window.RED)
+                (player.his_grid.x + player.his_grid.width / 2, player.his_grid.y - 5, "You", Constants.BLUE),
+                (player.opponent_grid.x + player.opponent_grid.width / 2, player.opponent_grid.y - 5, "Enemy", Constants.RED)
         ):
-            surf, rect = self.create_text(font_name=Window.FONT_NAME_1, font_size=int(font_size), text=name,
-                                          fg=color, bg=Window.BGCOLOR)
+            surf, rect = self.create_text(font_name=Constants.FONT_NAME_1, font_size=int(font_size), text=name,
+                                          fg=color, bg=Constants.BGCOLOR)
             rect.midbottom = (x, y)
             self.DISPLAYSURF.blit(surf, rect)
 
         # draw grids
-        player.his_grid.draw(surface=self.DISPLAYSURF, color1=Window.BLACK, color2=Window.BLUE, color3=Window.GREY)
-        player.opponent_grid.draw(surface=self.DISPLAYSURF, color1=Window.BLACK, color2=Window.RED, color3=Window.GREY)
+        player.his_grid.draw(surface=self.DISPLAYSURF, color1=Constants.BLACK, color2=Constants.BLUE, color3=Constants.GREY)
+        player.opponent_grid.draw(surface=self.DISPLAYSURF, color1=Constants.BLACK, color2=Constants.RED, color3=Constants.GREY)
 
         # draw table
         player.fleet_table.draw(surface=self.DISPLAYSURF)
 
         # show message
         font_size = self._margin * 0.2
-        surf, rect = self.create_text(font_name=Window.FONT_NAME_1, font_size=int(font_size), text=self._message,
-                                      fg=Window.BLACK, bg=Window.BGCOLOR)
-        rect.midbottom = (self._width // 2, self._height - (self._margin - font_size) // 2)
+        surf, rect = self.create_text(font_name=Constants.FONT_NAME_1, font_size=int(font_size), text=self._message,
+                                      fg=Constants.GREY, bg=Constants.BGCOLOR)
+        # rect.midbottom = (self._width // 2, self._height - (self._margin - font_size) // 2)
+        rect.midbottom = (player.opponent_grid.area.midbottom[0], self._height - (self._margin - font_size) // 2)
         self.DISPLAYSURF.blit(surf, rect)
 
         # --- Changeable elements ---
@@ -217,12 +195,43 @@ class Window(object):
         """
         if animation:
             pass
-        # self._display_surface.fill(Window.BGCOLOR)  # clear
+
         if win:
             caption = "YOU WON!!!"
         else:
             caption = "YOU LOST!"
         self._show_caption_message_screen(caption=caption, message="Thank you for playing the game with me! :)")
+        return
+
+    def show_game_over_screen_alpha(self, win, animation=False):
+        """
+        Sets the game over cover on top of the game screen.
+        This happens when game is finished.
+        :param win: bool
+        :param animation: bool
+        :return: None
+        """
+        if animation:
+            pass
+
+        alpha_value = 128
+        if win:
+            caption = "YOU WON!!!"
+            bgcolor = Constants.BLUE + (alpha_value, )
+        else:
+            caption = "YOU LOST!"
+            bgcolor = Constants.RED + (alpha_value, )
+
+        transparent_surface = pygame.Surface((self._width, self._height))
+        transparent_surface = transparent_surface.convert_alpha()
+        transparent_surface.fill(bgcolor)
+        self.DISPLAYSURF.blit(transparent_surface, (0, 0))
+
+        surf, rect = self.create_text(font_name=Constants.FONT_NAME_1, font_size=Constants.FONT_SIZE_2, text=caption,
+                                      fg=Constants.BLACK)
+        rect.center = self._width // 2, self._height // 2
+
+        self.DISPLAYSURF.blit(surf, rect)
         return
 
     def _show_caption_message_screen(self, caption, message):
@@ -235,12 +244,12 @@ class Window(object):
         :param message: str
         :return: None
         """
-        caption_surf, caption_rect = Window.create_text(Window.FONT_NAME_1, Window.FONT_SIZE_1,
-                                                        caption, Window.BLACK, Window.WHITE)
+        caption_surf, caption_rect = Window.create_text(Constants.FONT_NAME_1, Constants.FONT_SIZE_1,
+                                                        caption, Constants.BLACK, Constants.WHITE)
         caption_rect.midtop = (self._width / 2, self._height / 4)
 
-        message_surf, message_rect = Window.create_text(Window.FONT_NAME_1, Window.FONT_SIZE_2,
-                                                        message, Window.BLACK, Window.WHITE)
+        message_surf, message_rect = Window.create_text(Constants.FONT_NAME_1, Constants.FONT_SIZE_2,
+                                                        message, Constants.BLACK, Constants.WHITE)
         message_rect.midbottom = (self._width / 2, self._height * 0.75)
 
         self.DISPLAYSURF.blit(caption_surf, caption_rect)
@@ -248,7 +257,7 @@ class Window(object):
         return
 
     @staticmethod
-    def create_text(font_name, font_size, text, fg, bg):
+    def create_text(font_name, font_size, text, fg, bg=None):
         """
         Private method, just to better organize our code, as we will
         need to create a text many times.
@@ -277,7 +286,7 @@ class Window(object):
         :param func: function
         :return: None
         """
-        number_of_iterations = time * Window.FPS
+        number_of_iterations = time * Constants.FPS
         for _ in range(number_of_iterations):
             func()
             self.update()
@@ -294,7 +303,7 @@ class Window(object):
         if clear:
             self.clear()
         pygame.display.update()
-        Window.FPS_CLOCK.tick(Window.FPS)
+        Constants.FPS_CLOCK.tick(Constants.FPS)
         return
 
     def clear(self):
@@ -302,5 +311,5 @@ class Window(object):
         Clears the display surface.
         :return: None
         """
-        self.DISPLAYSURF.fill(Window.BGCOLOR)
+        self.DISPLAYSURF.fill(Constants.BGCOLOR)
         return

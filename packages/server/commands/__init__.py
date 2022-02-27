@@ -3,6 +3,7 @@
 # package name: command
 
 import functools
+from packages.public.constants import Constants
 from packages.public.logger import Logger
 from packages.public.timer import Timer
 from packages.server.clients.client import Client
@@ -18,22 +19,13 @@ def _time_offset(func):
     functools.wraps(func)
 
     def time_offset_wrapper(*args, **kwargs):
-        Timer.wait(t=Commands.get_each_command_time_offset())
+        Timer.wait(t=Constants.COMMAND_TIME_OFFSET)
         return func(*args, **kwargs)
 
     return time_offset_wrapper
 
 
 class Commands(object):
-    GAME = "-game"
-    READY = "-ready"
-    STRIKE = "-strike"
-    LEFT = "-left"
-    STAY = "-stay"
-    DEFEND = "-defend"
-
-    _each_command_time_offset = 1e-3
-    _username_waiting_time = 10  # seconds
 
     def __init__(self, server):
         """
@@ -43,7 +35,7 @@ class Commands(object):
         self._server = server
 
     @_time_offset
-    def client_left(self, client):
+    def left(self, client):
         """
         This command is called when one of the clients exits
         during the game.
@@ -56,13 +48,13 @@ class Commands(object):
         client.connected = False  # ends 'client trace' while loop in server.py
         if client.in_game:
             self._server.send_(connection=client.game.get_opponent(client=client).connection,
-                               message=f"-left;")
-            client.game.kill()
+                               message=f"{Constants.CMD_LEFT};")
+            client.game.end()
         self._server.clients.remove_client(client=client)
         return True
 
     @staticmethod
-    def clients_ready(client):
+    def ready(client):
         """
         Checks if both clients are now ready.
         Returns True if they are.
@@ -73,7 +65,7 @@ class Commands(object):
         client.ready = True
         return client.game.get_opponent(client=client).ready
 
-    def client_stay(self, client):
+    def stay(self, client):
         """
         If client wants to stay, server moves him to the back of the queue.
         :param client: <class Client>
@@ -82,30 +74,6 @@ class Commands(object):
         self._server.clients.remove_client(client=client)
         self._server.clients.add_client(client=client)
         return
-
-    @staticmethod
-    def get_each_command_time_offset():
-        """
-        Getter.
-        :return: float
-        """
-        return Commands._each_command_time_offset
-
-    @_time_offset
-    def game_start(self, game):
-        """
-        Informs clients that both of them are ready to start with game.
-        Game starts.
-        :param game: <class Game>
-        :return: bool
-        """
-        # self._server.send_to_all(sequence=game.clients, message=f"-start;")
-        game.start()    # new Thread!
-        # game.join()
-        # for client in game.clients:       ### not needed? ###
-        #     # we will use this attribute later for each turn, clients will send ready before the start of each turn
-        #     client.ready = False
-        return True
 
     @_time_offset
     def get_username(self, connection):
@@ -117,7 +85,7 @@ class Commands(object):
         """
         username = ""
         try:
-            timer = Timer(t=Commands._username_waiting_time)
+            timer = Timer(t=Constants.USERNAME_WAITING_TIME)
             timer.start()
             timer.join()
             while username == "":  # waits for username
@@ -129,7 +97,7 @@ class Commands(object):
             return Client(connection=connection, username=username)
 
     @_time_offset
-    def new_game(self, client):
+    def game(self, client):
         """
         Informs client about newly created game in which he will be.
         :param client: <class Client>
@@ -166,16 +134,16 @@ class Commands(object):
         client = kwargs["client"]
         opponent = client.game.get_opponent(client=client)
         if len(args) == 0:  # informs client that it is now his turn for attack
-            self._server.send_(connection=client.connection, message=f"{Commands.STRIKE};")  # informs attacker
+            self._server.send_(connection=client.connection, message=f"{Constants.CMD_STRIKE};")  # informs attacker
             self._server.send_(connection=client.game.get_opponent(client=client).connection,    # informs defender
-                               message=f"{Commands.DEFEND};")
+                               message=f"{Constants.CMD_DEFEND};")
         elif len(args) == 1:
             value = args[0]
             if value == "all":      # client lost, opponent won
-                self._server.send_(connection=opponent.connection, message=f"{Commands.STRIKE};all")
+                self._server.send_(connection=opponent.connection, message=f"{Constants.CMD_STRIKE};all")
                 self._server.games.end_game(game_=client.game)
             elif value.strip('-').isdigit():  # informs opponent about attack
-                self._server.send_(connection=opponent.connection, message=f"{Commands.STRIKE};{value}")
+                self._server.send_(connection=opponent.connection, message=f"{Constants.CMD_STRIKE};{value}")
             else:
                 Logger.print(message=f"[Error 117]\t\tInvalid args: {args}")
                 return False
@@ -186,7 +154,7 @@ class Commands(object):
                 Logger.print(message=f"[Error 104]\t\t{e}")
                 return False
             else:   # forwards the attacker's choice to the opponent
-                self._server.send_(connection=opponent.connection, message=f"{Commands.STRIKE};{str(i)}|{str(j)}")
+                self._server.send_(connection=opponent.connection, message=f"{Constants.CMD_STRIKE};{str(i)}|{str(j)}")
         else:
             Logger.print(message=f"[Error 116]\t\tInvalid args: {args}")
             return False
