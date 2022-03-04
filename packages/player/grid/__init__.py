@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # package name: grid
-import pygame
 
+import pygame
 from packages.player.box import Box
 from packages.player.area import Area
 from packages.public.constants import Constants
@@ -20,18 +20,20 @@ class Grid(Area):
         :param border_width: int
         :param highlight_border_width: int
         """
+        # reshaping, because we want all boxes to have a int value for size, not float
+        while (rect[2] - 2 * border_width - Constants.SEPARATOR_WIDTH * (size - 1)) % size != 0:
+            rect = pygame.Rect(rect[0], rect[1], rect[2] - 1, rect[3] - 1)
+
         super().__init__(area=rect)
         self._size = size   # number of boxes in one row, and number of rows, so there will be n * n boxes in the grid
         self._border_width = border_width
         self._highlight_border_width = highlight_border_width
+
         self._grid = []   # matrix
 
-        width = self.width - 2 * (self._border_width + self._highlight_border_width)    # width without border margins
-        self._box_total_size = width // self._size   # size with box margins
-
-        # this is margin between borders and first row/column of the grid
-        # this can either be 0 if width mod self._size is equal to zero (that is, there is no remainder)
-        self._inside_grid_margin = (width % self._size) // 2
+        width = self.width - 2 * self._border_width    # width without border margins
+        width -= Constants.SEPARATOR_WIDTH * (self._size - 1)   # width without separators (that is, grid lines)
+        self._box_total_size = width / self._size   # size with box margins
 
         self._create()  # creates the grid (NO GUI, only data structure)
 
@@ -100,13 +102,13 @@ class Grid(Area):
         :return: None
         """
         # calculate the offset, starting point for our boxes to fill up, ignoring the grid borders and margins
-        offset_x = self.x + self._border_width + self._highlight_border_width + self._inside_grid_margin
-        offset_y = self.y + self._border_width + self._highlight_border_width + self._inside_grid_margin
+        offset_x = self.x + self._border_width
+        offset_y = self.y + self._border_width
         for i in range(self._size):
             row = []
             for j in range(self._size):
-                rect = pygame.Rect(offset_x + j * self._box_total_size,
-                                   offset_y + i * self._box_total_size,
+                rect = pygame.Rect(offset_x + j * (self._box_total_size + Constants.SEPARATOR_WIDTH),
+                                   offset_y + i * (self._box_total_size + Constants.SEPARATOR_WIDTH),
                                    self._box_total_size,
                                    self._box_total_size)
                 row.append(Box(rect))
@@ -139,16 +141,17 @@ class Grid(Area):
         :param color3: str
         :return: None
         """
+        # draw lines
+        line_lenght = self.width - 2 * self._border_width
+        line_width = Constants.SEPARATOR_WIDTH
+        for box in self.row(0)[1:]:     # vertical
+            pygame.draw.line(surface, color3, (box.x - line_width, box.y), (box.x - line_width, box.y + line_lenght), line_width)
+        for box in self.column(0)[1:]:  # parallel
+            pygame.draw.line(surface, color3, (box.x, box.y - line_width), (box.x + line_lenght, box.y - line_width), line_width)
+
         # draw borders
         pygame.draw.rect(surface, color1, self.area, self._border_width)
         pygame.draw.rect(surface, color2, self.area, self._highlight_border_width)
-
-        # draw lines
-        line_lenght = self.width - 2 * (self._border_width + self._highlight_border_width)
-        for box in self.row(0)[1:]:
-            pygame.draw.line(surface, color3, (box.x, box.y), (box.x, box.y + line_lenght), Constants.SEPARATOR_WIDTH)
-        for box in self.column(0)[1:]:
-            pygame.draw.line(surface, color3, (box.x, box.y), (box.x + line_lenght, box.y), Constants.SEPARATOR_WIDTH)
         return
 
     def get_index_of(self, box):

@@ -84,7 +84,8 @@ class Box(Area):
         :param surface: <class Surface>
         :return: None
         """
-        pygame.draw.rect(surface, self._color, (self.x + Constants.BOX_MARGIN, self.y + Constants.BOX_MARGIN, self.size, self.size))
+        pygame.draw.rect(surface, self._color, (self.x + Constants.BOX_MARGIN, self.y + Constants.BOX_MARGIN,
+                                                self.size, self.size))
         return
 
     def highlight(self, surface, color):

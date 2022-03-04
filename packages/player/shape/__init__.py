@@ -73,7 +73,7 @@ class Shape(object):
         # Shorter temp variable names
         x = self._head.x
         y = self._head.y
-        width = self._head.width
+        width = self._head.width + Constants.SEPARATOR_WIDTH
         while len(self._shape) < self._size:
             try:
                 if self._direction == Constants.DIR_LEFT:

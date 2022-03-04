@@ -156,16 +156,11 @@ class Player(Client):
             # update the game stats
             covered_box, highlighted_box = _on_mouse_motion(movement=movement, mousex=mousex, mousey=mousey,
                                                             highlighted_box=highlighted_box, grid_=self._his_grid)
-            # highlight the box
-            if highlighted_box:
-                highlighted_box.highlight(self._window.DISPLAYSURF, Constants.BLUE)
 
-                # create shape
-            if mouse_clicked and covered_box and (highlighted_shape is None or covered_box != highlighted_shape.head):
-                # player can click on the same box, then we don't need to draw new shape
-                highlighted_shape = Shape(grid=self.connection.player_grid, head=covered_box,
+            # create shape
+            if highlighted_box:
+                highlighted_shape = Shape(grid=self.connection.player_grid, head=highlighted_box,
                                           size=boat_size, direction=direction)
-                # highlight the shape
             if highlighted_shape and key_pressed and not create_boat:  # player changed the orientation of the shape
                 highlighted_shape.change_orientation(direction=direction)
             if highlighted_shape:
@@ -181,6 +176,7 @@ class Player(Client):
                     if created_boats < len(boat_order):
                         boat_size = boat_order[created_boats]
                     highlighted_shape = None
+                    highlighted_box = None
                 create_boat = False
                 # show boats
             for boat_ in self._boats:  # this will update existing boats, and created newly ones
@@ -278,7 +274,7 @@ class Player(Client):
         self._striking_box.type = type_
         # update the visual part
         from packages.public.logger import Logger
-        Logger.print(message=f"Checking box type...{type_}", type_=Logger.INFO)
+        # Logger.print(message=f"Checking box type...{type_}", type_=Logger.INFO)
         if type_ == Constants.EMPTY:  # miss
             # it's not a hit really, but for attacker, this will be his miss ("X") - marks the miss on the opponent_grid
             self._striking_box.miss(self._window.DISPLAYSURF)
@@ -335,11 +331,16 @@ def _on_mouse_motion(movement, mousex, mousey, highlighted_box, grid_):
     """
     if movement:  # if mouse has been moved
         covered_box = grid_.get_box_at_pixel(mousex, mousey)
-        if covered_box and covered_box != highlighted_box and covered_box.type == Constants.EMPTY:
-            # in order to highlight the box, it needs to be empty and not already highlighted
-            highlighted_box = covered_box
-        elif covered_box is None and not grid_.area.collidepoint(mousex, mousey):
-            highlighted_box = None
+        if covered_box:     # mouse over the grid's box
+            if covered_box != highlighted_box and covered_box.type == Constants.EMPTY:
+                # in order to highlight the box, it needs to be empty and not already highlighted
+                highlighted_box = covered_box
+            elif covered_box.type != Constants.EMPTY:
+                # already selected box, we do not have any highlighted box
+                highlighted_box = None
+        else:   # mouse is not over the grid's box
+            if not grid_.area.collidepoint(mousex, mousey):
+                highlighted_box = None
     else:  # no mouse motion
         covered_box = highlighted_box
     return covered_box, highlighted_box

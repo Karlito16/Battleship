@@ -17,10 +17,12 @@ from packages.public.logger import Logger
 
 class Battleship(Communication):
 
-    def __init__(self):
+    def __init__(self, offline=False):
         """
         Constructor. Extends the Communication class.
         Connects the player with server.
+        Parameter offline is set to True for gui testings only.
+        :param offline: bool
         """
         super().__init__()
         self._init_surf_areas()
@@ -37,7 +39,10 @@ class Battleship(Communication):
         self._fill_table_data()
         self._player = Player(window=self._window, his_grid=self._player_grid, opponent_grid=self._opponent_grid,
                               fleet_table=self._fleet_table, connection=self, username="")     # TODO: add username
-        self._player.connected = self.connect_to_server(ip_address=Constants.SERVER_HOSTNAME)
+        if offline:
+            self._player.connected = False  # default value
+        else:
+            self._player.connected = self.connect_to_server(ip_address=Constants.SERVER_HOSTNAME)
         self._commands = Commands(player=self._player)
 
     def _init_surf_areas(self):
